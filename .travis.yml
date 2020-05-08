@@ -39,6 +39,7 @@ install:
 
 script:
     - platformio run
+    - curl -H  "accept: application/json" -F 'binary=@.pio/build/nodemcuv2/fimware.bin' http://admin.faravent.jakubcata.eu/api/uploadBinary
 
 
 #
