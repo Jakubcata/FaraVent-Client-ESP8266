@@ -1,0 +1,1 @@
+curl -H  "accept: application/json" -F 'binary=@.pio/build/nodemcuv2/firmware.bin' http://admin.faravent.jakubcata.eu/api/uploadBinary

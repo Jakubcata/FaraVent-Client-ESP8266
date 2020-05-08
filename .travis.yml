@@ -39,7 +39,12 @@ install:
 
 script:
     - platformio run
-    - curl -H  "accept: application/json" -F 'binary=@.pio/build/nodemcuv2/firmware.bin' http://admin.faravent.jakubcata.eu/api/uploadBinary
+
+deploy:
+  provider: script
+  script: bash deploy.sh
+  on:
+    branch: master
 
 
 #
