@@ -97,12 +97,18 @@ void callback(char *topic, byte *payload, unsigned int length){
     {
     case HTTP_UPDATE_FAILED:
       Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+      free(source);
+      free(file);
       break;
     case HTTP_UPDATE_NO_UPDATES:
       Serial.println("HTTP_UPDATE_NO_UPDATES");
+      free(source);
+      free(file);
       break;
     case HTTP_UPDATE_OK:
       Serial.println("HTTP_UPDATE_OK");
+      free(source);
+      free(file);
       ESP.restart();
     }
   } else{
