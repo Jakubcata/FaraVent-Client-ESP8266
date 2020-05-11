@@ -3,6 +3,7 @@
 #include <PubSubClient.h>
 #include <Arduino.h>
 #include <ESP8266httpUpdate.h>
+#include <ArduinoJson.h>
 
 String ssid;
 String password;
@@ -70,45 +71,25 @@ void callback(char *topic, byte *payload, unsigned int length){
   Serial.print("\n");
 
   if(strcmp(topic,"nova_skusobna_update") == 0){
-    Serial.print("update\n");
-    char *source = (char *)malloc(50);
-    char *file = (char *)malloc(50);
+    DynamicJsonDocument json(150);
+    deserializeJson(json, (char*)payload);
+    JsonObject update_meta = json.as<JsonObject>();
+    const char* host = update_meta["host"];
+    const char* path = update_meta["path"];
 
-    int k = 0;
-    for (size_t i = 0; i < length; i++,k++){
-      if (((char)payload[i]) == '/'){
-        break;
-      }
-      source[i] = ((char)payload[k]);
-    }
-    source[k] = '\0';
-    size_t i = 0;
-    for (; i < length; i++,k++){
-      file[i] = ((char)payload[k]);
-    }
-    file[i] = '\0';
-
-    Serial.printf("%s\n", source);
-    Serial.printf("%s\n", file);
-
-    t_httpUpdate_return ret = ESPhttpUpdate.update(source, 80, file);
+    Serial.printf("%s %s\n", host, path);
+    t_httpUpdate_return ret = ESPhttpUpdate.update(host, 80, path);
 
     switch (ret)
     {
     case HTTP_UPDATE_FAILED:
       Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-      free(source);
-      free(file);
       break;
     case HTTP_UPDATE_NO_UPDATES:
       Serial.println("HTTP_UPDATE_NO_UPDATES");
-      free(source);
-      free(file);
       break;
     case HTTP_UPDATE_OK:
       Serial.println("HTTP_UPDATE_OK");
-      free(source);
-      free(file);
       ESP.restart();
     }
   } else{
@@ -164,7 +145,7 @@ void setup()
 {
   pinMode(BUILTIN_LED, OUTPUT); // Initialize the BUILTIN_LED pin as an output
   Serial.begin(9600);
-  Serial.printf("Version 2\n");
+  Serial.printf("Version 2.2\n");
   EEPROM.begin(512);
 
   mqtt_server = read_String(60);
