@@ -10,6 +10,10 @@ class MotionSensor
 
     public:
         MotionSensor( uint8_t aPin ): iPin( aPin )
+        {            
+        }
+
+        void Init()
         {
             pinMode( iPin, INPUT );
         }
