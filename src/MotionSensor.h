@@ -10,12 +10,8 @@ class MotionSensor
 
     public:
         MotionSensor( uint8_t aPin ): iPin( aPin )
-        {            
-        }
-
-        void Init()
         {
-            pinMode( iPin, INPUT );
+            pinMode( iPin, INPUT );       
         }
 
         bool IsMovement() const
