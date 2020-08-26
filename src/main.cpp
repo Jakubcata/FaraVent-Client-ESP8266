@@ -1,3 +1,4 @@
+#if 0
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 #include <PubSubClient.h>
@@ -35,6 +36,41 @@ String read_String(char add)
   return String(data);
 }
 
+
+
+#endif 
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <Arduino.h>
+#include <Wire.h>
+#include "Interrupt.h"
+#include "MotionSensor.h"
+#include "ShtSensor.h"
+#include <WiFi.h>
+#include <EEPROM.h>
+#include <PubSubClient.h>
+#include <Arduino.h>
+//#include <ESP8266httpUpdate.h>
+#include <ArduinoJson.h>
+
+String ssid;
+String password;
+String mqtt_server;
+String mqtt_name;
+String mqtt_password;
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+unsigned long lastMsg = 0;
+#define MSG_BUFFER_SIZE (50)
+char msg[MSG_BUFFER_SIZE];
+int value = 0;
+
+
+ShtSensor TempHumSesnor = ShtSensor( 21, 22 );
+MotionSensor MotSensor = MotionSensor( 15 );
+
 void setup_wifi()
 {
   delay(10);
@@ -43,8 +79,8 @@ void setup_wifi()
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
-  ssid = read_String(0);
-  password = read_String(30);
+  ssid = "Jakubcata & BW";//read_String(0);
+  password = "NaJednejCeste";//read_String(30);
   WiFi.begin(ssid.c_str(), password.c_str());
 
   while (WiFi.status() != WL_CONNECTED)
@@ -60,6 +96,7 @@ void setup_wifi()
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 }
+
 
 void callback(char *topic, byte *payload, unsigned int length){
   Serial.print("Message arrived [");
@@ -78,7 +115,7 @@ void callback(char *topic, byte *payload, unsigned int length){
     const char* path = update_meta["path"];
 
     Serial.printf("%s %s\n", host, path);
-    t_httpUpdate_return ret = ESPhttpUpdate.update(host, 80, path);
+ /*   t_httpUpdate_return ret = ESPhttpUpdate.update(host, 80, path);
 
     switch (ret)
     {
@@ -95,7 +132,8 @@ void callback(char *topic, byte *payload, unsigned int length){
   } else{
     Serial.print("no update\n");
   }
-  
+  */
+  }
     
   
 
@@ -148,9 +186,9 @@ void setup()
   Serial.printf("Version 2.2\n");
   EEPROM.begin(512);
 
-  mqtt_server = read_String(60);
-  mqtt_name = read_String(100);
-  mqtt_password = read_String(130);
+  mqtt_server = "mqtt.faravent.jakubcata.eu";//read_String(60);
+  mqtt_name = "jakubcata";//read_String(100);
+  mqtt_password = "jakubcata2005";//read_String(130);
   setup_wifi();
   client.setServer(mqtt_server.c_str(), 1883);
   client.setCallback(callback);
@@ -158,21 +196,43 @@ void setup()
 
 void loop()
 {
+    static uint64_t timestamp;
 
-  if (!client.connected())
-  {
-    reconnect();
-  }
-  client.loop();
+    if (!client.connected())
+    {
+      reconnect();
+    }
+    client.loop();
 
-  unsigned long now = millis();
-  if (now - lastMsg > 2000)
-  {
-    lastMsg = now;
-    ++value;
-    snprintf(msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    client.publish("nova_skusobna_out", msg);
-  }
+
+    // Do update of the sensor data
+    TempHumSesnor.Update();
+
+    digitalWrite( BUILTIN_LED, !MotSensor.IsMovement() );
+
+    uint64_t now = millis();
+    if (now - timestamp >= 2000)
+    {   
+
+
+        timestamp = now;
+
+        Serial.println("500ms elapsed!");
+
+        Serial.print("Temperature: ");
+        Serial.println( TempHumSesnor.GetTemperature() );
+        Serial.print("Humidity: ");
+        Serial.println( TempHumSesnor.GetHumidity() );
+        StaticJsonDocument<200> doc;
+        doc["temp"] = TempHumSesnor.GetTemperature();
+        doc["hum"] = TempHumSesnor.GetHumidity();
+        doc["signl"] = WiFi.RSSI();
+
+        doc["version"] = "0.2";
+
+        serializeJson(doc, msg);
+        Serial.print("Publish message: ");
+        Serial.println(msg);
+        client.publish("nova_skusobna_out", msg);
+    }
 }
