@@ -83,10 +83,17 @@ void setup_wifi()
   password = "NaJednejCeste";//read_String(30);
   WiFi.begin(ssid.c_str(), password.c_str());
 
+  static uint64_t timestamp = millis();
+
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
+
     Serial.print(".");
+    if (millis() - timestamp >= 10000)
+    {
+        ESP.restart();
+    }   
   }
 
   randomSeed(micros());
