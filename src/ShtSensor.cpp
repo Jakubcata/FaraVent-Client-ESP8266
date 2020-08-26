@@ -77,32 +77,4 @@ void ShtSensor::Update()
             send_cmd = true;
         }
     }
-    
-
-    /*switch ( iUpdateState )
-    {
-    case SEND_SINGLE_SHOT:
-        if ( SendSingleShot() )
-        {
-            iUpdateState = WAIT_FOR_DATA;
-            // Need to store timestamp when command was sent to the sensor
-            timestamp = now;
-        }
-        break;
-    case WAIT_FOR_DATA:
-        // 15 ms for SHT sensor to prepare data from measurement
-        if ( now - timestamp >= 15 )
-        {
-            iUpdateState = RECEIVE_DATA;
-        }
-        break;
-    case RECEIVE_DATA:
-        ReceiveAndCompute();
-
-        iUpdateState = SEND_SINGLE_SHOT;
-        break;
-
-    default:
-        break;
-    }*/
 }

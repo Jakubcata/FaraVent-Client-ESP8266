@@ -226,6 +226,9 @@ void loop()
         StaticJsonDocument<200> doc;
         doc["temp"] = TempHumSesnor.GetTemperature();
         doc["hum"] = TempHumSesnor.GetHumidity();
+
+        doc["movmnt"] = !MotSensor.IsMovement(); 
+
         doc["signl"] = WiFi.RSSI();
 
         doc["version"] = "0.3";
