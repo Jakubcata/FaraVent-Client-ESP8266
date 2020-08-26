@@ -55,7 +55,6 @@ void ShtSensor::ReceiveAndCompute()
 
 void ShtSensor::Update()
 {
-<<<<<<< HEAD
     static bool send_cmd = true;
     static uint64_t timestamp = 0;
     
@@ -81,12 +80,6 @@ void ShtSensor::Update()
     
 
     /*switch ( iUpdateState )
-=======
-    static uint64_t timestamp = 0;
-    uint64_t now = millis();
-    
-    switch ( iUpdateState )
->>>>>>> 4bec18f81854bdadcc414a2b0acaf518d2c149a0
     {
     case SEND_SINGLE_SHOT:
         if ( SendSingleShot() )
@@ -111,9 +104,5 @@ void ShtSensor::Update()
 
     default:
         break;
-<<<<<<< HEAD
     }*/
-=======
-    }
->>>>>>> 4bec18f81854bdadcc414a2b0acaf518d2c149a0
 }
