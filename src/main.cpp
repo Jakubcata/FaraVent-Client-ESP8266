@@ -69,7 +69,10 @@ int value = 0;
 
 
 ShtSensor TempHumSesnor = ShtSensor( 21, 22 );
+<<<<<<< HEAD
 MotionSensor MotSensor = MotionSensor( 15 );
+=======
+>>>>>>> 4bec18f81854bdadcc414a2b0acaf518d2c149a0
 
 void setup_wifi()
 {
@@ -79,8 +82,13 @@ void setup_wifi()
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
+<<<<<<< HEAD
   ssid = "Jakubcata & BW";//read_String(0);
   password = "NaJednejCeste";//read_String(30);
+=======
+  ssid = "FiPe2LuTo";//read_String(0);
+  password = "1337Chrenov";//read_String(30);
+>>>>>>> 4bec18f81854bdadcc414a2b0acaf518d2c149a0
   WiFi.begin(ssid.c_str(), password.c_str());
 
   while (WiFi.status() != WL_CONNECTED)
@@ -207,11 +215,17 @@ void loop()
 
     // Do update of the sensor data
     TempHumSesnor.Update();
+<<<<<<< HEAD
 
     digitalWrite( BUILTIN_LED, !MotSensor.IsMovement() );
 
     uint64_t now = millis();
     if (now - timestamp >= 2000)
+=======
+    
+    uint64_t now = millis();
+    if (now - timestamp >= 500)
+>>>>>>> 4bec18f81854bdadcc414a2b0acaf518d2c149a0
     {   
 
 
@@ -222,6 +236,7 @@ void loop()
         Serial.print("Temperature: ");
         Serial.println( TempHumSesnor.GetTemperature() );
         Serial.print("Humidity: ");
+<<<<<<< HEAD
         Serial.println( TempHumSesnor.GetHumidity() );
         StaticJsonDocument<200> doc;
         doc["temp"] = TempHumSesnor.GetTemperature();
@@ -230,6 +245,12 @@ void loop()
 
         doc["version"] = "0.2";
 
+=======
+        Serial.println( );
+        StaticJsonDocument<200> doc;
+        doc["temp"] = TempHumSesnor.GetTemperature();
+        doc["hum"] = TempHumSesnor.GetHumidity();
+>>>>>>> 4bec18f81854bdadcc414a2b0acaf518d2c149a0
         serializeJson(doc, msg);
         Serial.print("Publish message: ");
         Serial.println(msg);
