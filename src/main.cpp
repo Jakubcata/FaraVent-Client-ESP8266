@@ -215,7 +215,7 @@ void loop()
     // Do update of the sensor data
     TempHumSesnor.Update();
 
-    digitalWrite( BUILTIN_LED, MotSensor.IsMovement() );
+    digitalWrite( BUILTIN_LED, !MotSensor.IsMovement() );
 
     uint64_t now = millis();
     if (now - timestamp >= 2000)
@@ -234,7 +234,7 @@ void loop()
         doc["temp"] = TempHumSesnor.GetTemperature();
         doc["hum"] = TempHumSesnor.GetHumidity();
 
-        doc["movmnt"] = !MotSensor.IsMovement(); 
+        doc["movmnt"] = MotSensor.IsMovement(); 
 
         doc["signl"] = WiFi.RSSI();
 
