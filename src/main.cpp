@@ -51,7 +51,7 @@ String read_String(char add)
 #include <EEPROM.h>
 #include <PubSubClient.h>
 #include <Arduino.h>
-//#include <ESP8266httpUpdate.h>
+#include "ESP32httpUpdate.h"
 #include <ArduinoJson.h>
 
 String ssid;
@@ -63,7 +63,7 @@ String mqtt_password;
 WiFiClient espClient;
 PubSubClient client(espClient);
 unsigned long lastMsg = 0;
-#define MSG_BUFFER_SIZE (50)
+#define MSG_BUFFER_SIZE (256)
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
 
@@ -107,7 +107,8 @@ void callback(char *topic, byte *payload, unsigned int length){
   }
   Serial.print("\n");
 
-  if(strcmp(topic,"nova_skusobna_update") == 0){
+  if(strcmp(topic,"nova_skusobna_update") == 0)
+  {
     DynamicJsonDocument json(150);
     deserializeJson(json, (char*)payload);
     JsonObject update_meta = json.as<JsonObject>();
@@ -115,7 +116,7 @@ void callback(char *topic, byte *payload, unsigned int length){
     const char* path = update_meta["path"];
 
     Serial.printf("%s %s\n", host, path);
- /*   t_httpUpdate_return ret = ESPhttpUpdate.update(host, 80, path);
+    t_httpUpdate_return ret = ESPhttpUpdate.update(host, 80, path);
 
     switch (ret)
     {
@@ -128,15 +129,14 @@ void callback(char *topic, byte *payload, unsigned int length){
     case HTTP_UPDATE_OK:
       Serial.println("HTTP_UPDATE_OK");
       ESP.restart();
+      break;
     }
-  } else{
+  } 
+  else
+  {
     Serial.print("no update\n");
   }
-  */
-  }
     
-  
-
   // Switch on the LED if an 1 was received as first character
   if ((char)payload[0] == '1')
   {
@@ -228,7 +228,7 @@ void loop()
         doc["hum"] = TempHumSesnor.GetHumidity();
         doc["signl"] = WiFi.RSSI();
 
-        doc["version"] = "0.2";
+        doc["version"] = "0.3";
 
         serializeJson(doc, msg);
         Serial.print("Publish message: ");
