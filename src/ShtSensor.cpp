@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "Interrupt.h"
+#include "ShtCommand.h"
 #include "ShtSensor.h"
 
 void ShtSensor::FlushData( const uint16_t aMaxFllushes )
