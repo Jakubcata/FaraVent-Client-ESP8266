@@ -7,16 +7,6 @@
 
 class ShtSensor: public TwoWire
 {
-    enum UpdateState_t
-    {
-        SEND_SINGLE_SHOT,
-        WAIT_FOR_DATA,
-        RECEIVE_DATA,
-        ERROR,
-    };
-
-    enum UpdateState_t iUpdateState;
-
     uint8_t iAddr;
 
     float iTemp;
