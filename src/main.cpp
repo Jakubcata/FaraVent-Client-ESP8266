@@ -238,7 +238,7 @@ void loop()
 
         doc["signl"] = WiFi.RSSI();
 
-        doc["version"] = "0.3";
+        doc["version"] = "0.4";
 
         serializeJson(doc, msg);
         Serial.print("Publish message: ");
