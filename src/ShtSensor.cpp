@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <Arduino.h>
 #include <Wire.h>
-#include "Interrupt.h"
 #include "ShtCommand.h"
 #include "ShtSensor.h"
 
@@ -20,63 +19,123 @@ void ShtSensor::FlushData( const uint16_t aMaxFllushes )
     }
 }
 
-bool ShtSensor::SendSingleShot()
+bool ShtSensor::SendCommand( ShtCmdBase &aCmd )
 {
-    bool cmdsent = false;
+    bool success = false;
+    const uint8_t cmd_size = aCmd.GetSize();
 
+    // Flush I2C interface before transmission starts
     FlushData( 1000 );
 
-    const uint8_t singleshot_cmd[] = { 0x24, 0x00 }; 
-    const uint8_t cmdsize = sizeof singleshot_cmd;
-
     beginTransmission( iAddr );
-    cmdsent = write( singleshot_cmd, cmdsize ) == cmdsize;  
+    // Command is successfully sent if number of sent bytes equals to size of a command
+    success = write( &(aCmd[0]), cmd_size ) == cmd_size;  
     endTransmission();
 
-    return cmdsent;
+    return success;
 }
 
-void ShtSensor::ReceiveAndCompute()
+bool ShtSensor::ReceiveResponse( ShtDataResponse &aResponse, const uint8_t aTimeout )
 {
-    uint8_t receive_buff[6] = { 0 };
-    uint8_t bytes_count = 0;
+    const uint8_t response_size = aResponse.GetSize();
+    
+    uint8_t rx_count = 0;
+    bool tm_elapsed = false;
 
-    requestFrom( iAddr, (uint8_t)6 );
+    const uint64_t timeout = millis() + aTimeout;
 
-    while (available() && bytes_count < 5 )
+    // Try to receive response from SHT sensor
+    while ( ( rx_count < response_size ) && !tm_elapsed )
     {
-        receive_buff[bytes_count++] = read();
+        rx_count = requestFrom( iAddr, response_size );
+        tm_elapsed = millis() > timeout;
     }
 
-    uint16_t tempRaw = (((uint16_t) receive_buff[0]) << 8 | receive_buff[1]);
-    uint16_t humRaw = (((uint16_t)receive_buff[3]) << 8 | receive_buff[4]); 
+    // Get received data if timeout not elapsed
+    if ( !tm_elapsed )
+    {
+        for ( uint8_t byte = 0; ( byte < response_size ) && available(); ++byte )
+        {
+            aResponse[byte] = read();
+        }
+    }
 
-    iTemp = -45 + 175.0 * (tempRaw / 65535.0);
-    iHum = 100.0 * (humRaw / 65535.0);
+    return ( rx_count == response_size );
+}
+
+void ShtSensor::ProcessResponse( ShtDataResponse &aResponse )
+{
+    // Process temperature 
+    if ( aResponse.IsTempValid() )
+    {
+        iTemp = -45 + 175.0 * ( aResponse.GetRawTemp() / 65535.0 );
+    }
+    else
+    {
+        Serial.print( "Invalid Temperature packet received!\n" );
+        // TODO: Tmeperature packet is invalid
+    }
+    
+    // Process humidity
+    if ( aResponse.IsHumValid() )
+    {
+        iHum = 100.0 * ( aResponse.GetRawHum() / 65535.0 );
+    }
+    else
+    {
+        Serial.print( "Invalid Humidity packet received!\n" );
+        // TODO: Humidity packet is invalid
+    }
 }
 
 void ShtSensor::Update()
 {
-    static bool send_cmd = true;
-    static uint64_t timestamp = 0;
-    
-    uint64_t now = millis();
-    
-    if ( send_cmd )
+    enum TransmitMode
     {
-        if ( SendSingleShot() )
+        eTransmit,
+        eReceive
+    };
+
+    static TransmitMode mode = eTransmit;
+
+    if ( mode == eTransmit )
+    {
+        SingleShotCmd shot_cmd;
+
+        // If command was successfully sent
+        if ( SendCommand( shot_cmd ) )
         {
-            send_cmd = false;
-            timestamp = now;
+            // Store timestamp of sent command
+            iLastCmdTime = millis();
+
+            // Command successfully sent, go to receive mode
+            mode = eReceive;
         }
     }
     else
     {
-        // 15 ms for SHT sensor to prepare data from measurement 
-        if ( now - timestamp >= 15 )
+        // If time to measure data by SHT sensor elapsed
+        if ( IsTimeToReceive() )
         {
-            ReceiveAndCompute();
-            send_cmd = true;
+            ShtDataResponse response;
+
+            if ( ReceiveResponse( response, SHT_RESPONSE_TIMEOUT_MS ) )
+            {
+                // Response from SHT sensor received so set error code to eNoError
+                iErrorCode = ShtSensorErr::eNoError;
+
+                // Process received response
+                ProcessResponse( response );
+            }
+            else
+            {
+                iErrorCode = ShtSensorErr::eNotResponding;
+
+                // SHT sensor did not respond within 20 ms
+                Serial.print( "SHT sensor did not respond within 20ms!\n" );
+            }
+            
+            mode = eTransmit;    
         }
     }
 }
