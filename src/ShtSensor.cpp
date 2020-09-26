@@ -5,14 +5,15 @@
 #include "Interrupt.h"
 #include "ShtSensor.h"
 
-void ShtSensor::FlushData()
+void ShtSensor::FlushData( const uint16_t aMaxFllushes )
 {
+    uint16_t flushes = aMaxFllushes; 
+    
     // Flush internal buffers of I2C interface
     flush();
-
+    
     // Call read function to make sure that there are no bytes in the receive buffer
-    uint16_t maxflushes = 1000;
-    while( available() && maxflushes --> 0 )
+    while( available() && flushes --> 0 )
     {
         read();
     }
@@ -22,7 +23,7 @@ bool ShtSensor::SendSingleShot()
 {
     bool cmdsent = false;
 
-    FlushData();
+    FlushData( 1000 );
 
     const uint8_t singleshot_cmd[] = { 0x24, 0x00 }; 
     const uint8_t cmdsize = sizeof singleshot_cmd;

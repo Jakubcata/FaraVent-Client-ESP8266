@@ -23,7 +23,12 @@ class ShtSensor: public TwoWire
 
     float iHum;
 
-    void FlushData();
+    /**
+     * Flushes internal buffers to prepare I2C interface for receiving data from SHT sensor 
+     * 
+     * @param aMaxFllushes maximal number of internal flush() function calls       
+    */
+    void FlushData( const uint16_t aMaxFllushes );
 
     bool SendSingleShot();
 
