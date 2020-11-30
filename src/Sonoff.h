@@ -13,17 +13,17 @@ class Sonoff
     /** 
      * A Sonoff device ID
     */
-    const String iDevID;
+    String iDevID;
 
     /** 
      * An IP address of Sonoff
     */
-    const String iIP;
+    String iIP;
 
     /** 
      * A port Sonoff is listening to
     */
-    const uint16_t iPort;
+    uint16_t iPort;
     
     /** 
      * HTTP request URL base used to send POST request to Sonoff
@@ -56,10 +56,12 @@ class Sonoff
         * @param aChannelNum Number of channels    
         */
         Sonoff( String aIP, uint16_t aPort=8081, String aDevID="", uint8_t aChannelNum=1 ): 
-            iIP( aIP ), 
-            iPort( aPort ),
-            iDevID ( aDevID )
+            iIP( aIP ),
+            iPort( aPort )
         {
+            // This attribute needs to be set here
+            iDevID = aDevID;
+            
             iUrlBase = "http://" + aIP + ':' + aPort + '/' + "zeroconf/";
         }
 
