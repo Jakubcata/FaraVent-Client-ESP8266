@@ -41,29 +41,27 @@ int Sonoff::SendPost( String aSubDir, String aPayload, uint16_t aTimeout )
 }
 
 bool Sonoff::SwitchOn()
-{   
+{
+    bool success = false;   
     String payload = GetSwitchRequest( true );
 
     if ( SendPost( "switch", payload ) > 0 )
     {
-        Serial.println("Sending POST success!");
+        success = true;
     }
-    else
-    {
-        Serial.println("Error on sending POST!");
-    }
+
+    return success;
 }
 
 bool Sonoff::SwitchOff()
 {
-    String msg = GetSwitchRequest( false );
+    bool success = false;
+    String payload = GetSwitchRequest( false );
 
-    if ( SendPost( "switch", msg ) > 0 )
+    if ( SendPost( "switch", payload ) > 0 )
     {
-        Serial.println("Sending POST success!");
+        success = true;
     }
-    else
-    {
-        Serial.println("Error on sending POST!");
-    }
+
+    return success;
 }
